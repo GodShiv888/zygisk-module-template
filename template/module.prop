@@ -1,7 +1,6 @@
-id=${moduleId}
-name=${moduleName}
-version=${versionName}
-versionCode=${versionCode}
-author=5ec1cff
-description=Module sample
-#updateJson=
+id=fps_unlocker_zygisk
+name=Universal FPS Unlocker (Zygisk)
+version=v1.0
+versionCode=1
+author=thefool
+description=Spoofs device properties per-app to unlock max FPS without affecting system stability.
