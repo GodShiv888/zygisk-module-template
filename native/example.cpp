@@ -1,3 +1,56 @@
+#include <cstdlib>
+#include <android/log.h>
+#include <sys/system_properties.h>
+#include "zygisk.hpp"
+
+// Define a logging tag so you can read your module's output in Logcat
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "FPS_Unlocker", __VA_ARGS__)
+
+using zygisk::Api;
+using zygisk::AppSpecializeArgs;
+
+class FpsUnlockerModule : public zygisk::ModuleBase {
+public:
+    void onLoad(Api *api, JNIEnv *env) override {
+        this->api = api;
+        this->env = env;
+    }
+
+    // This runs BEFORE the app fully opens. We use it to check the package name.
+    void preAppSpecialize(AppSpecializeArgs *args) override {
+        const char *process = env->GetStringUTFChars(args->nice_name, nullptr);
+        
+        // Target specific game package names (e.g., PUBG, CODM)
+        if (strcmp(process, "com.tencent.ig") == 0 || 
+            strcmp(process, "com.activision.callofduty.shooter") == 0) {
+            
+            LOGD("Target game detected: %s. Preparing to spoof properties...", process);
+            is_target_game = true;
+        }
+        env->ReleaseStringUTFChars(args->nice_name, process);
+    }
+
+    // This runs AFTER the app's process is created. We apply the spoofing here.
+    void postAppSpecialize(const AppSpecializeArgs *args) override {
+        if (is_target_game) {
+            LOGD("Injecting ROG Phone 6 properties...");
+            
+            // Note: Actual memory hooking of __system_property_get goes here.
+            // You would use your Api* to hook the property retrieval functions
+            // and force them to return:
+            // ro.product.manufacturer = "asus"
+            // ro.product.model = "ASUS_AI2201_A"
+        }
+    }
+
+private:
+    Api *api;
+    JNIEnv *env;
+    bool is_target_game = false;
+};
+
+// Register the module with Zygisk
+REGISTER_ZYGISK_MODULE(FpsUnlockerModule)
 /* Copyright 2022-2023 John "topjohnwu" Wu
  *
  * Permission to use, copy, modify, and/or distribute this software for any
